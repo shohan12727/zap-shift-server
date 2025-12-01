@@ -22,14 +22,24 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server
     await client.connect();
 
     const myDB = client.db("zap_shift");
     const parcelsCollection = myDB.collection("parcels");
 
     // parcels api
-    app.get("/", async (req, res) => {});
+    app.get("/parcels", async (req, res) => {
+        const query = {};
+       const {email} = req.query;
+       // parcels?email = ' '
+      if(email){
+        query.senderEmail = email;
+      }
+        const cursor = parcelsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+    });
 
     app.post("/parcels", async (req, res) => {
       const parcels = req.body;
