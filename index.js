@@ -30,20 +30,24 @@ async function run() {
 
     // parcels api
     app.get("/parcels", async (req, res) => {
-        const query = {};
-       const {email} = req.query;
-       // parcels?email = ' '
-      if(email){
+      const query = {};
+      const { email } = req.query;
+      // parcels?email = ' '
+      if (email) {
         query.senderEmail = email;
       }
-        const cursor = parcelsCollection.find(query);
-        const result = await cursor.toArray();
-        res.send(result);
+      const options = { sort: { createdAt: -1 } };
+      const cursor = parcelsCollection.find(query, options);
+      const result = await cursor.toArray();
+      res.send(result);
     });
 
     app.post("/parcels", async (req, res) => {
       const parcels = req.body;
-      const  result = await parcelsCollection.insertOne(parcels);
+      // parcel created time
+      parcels.createdAt = new Date();
+
+      const result = await parcelsCollection.insertOne(parcels);
       res.send(result);
     });
 
