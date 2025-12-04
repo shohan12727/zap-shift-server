@@ -27,6 +27,17 @@ async function run() {
 
     const myDB = client.db("zap_shift");
     const parcelsCollection = myDB.collection("parcels");
+    const userCollection = myDB.collection("users")
+
+    //users api 
+
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      user.role = 'user'
+      user.createdAt = new Date();
+      const result = await userCollection.insertOne(user);
+      res.send(result)
+    })
 
     // parcels api
     app.get("/parcels", async (req, res) => {
@@ -81,4 +92,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-// just for check 
