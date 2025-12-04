@@ -27,17 +27,24 @@ async function run() {
 
     const myDB = client.db("zap_shift");
     const parcelsCollection = myDB.collection("parcels");
-    const userCollection = myDB.collection("users")
+    const userCollection = myDB.collection("users");
 
-    //users api 
+    //users api
 
-    app.post('/users', async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
-      user.role = 'user'
+      user.role = "user";
       user.createdAt = new Date();
+
+      const email = user.email;
+      const userExist = await userCollection.findOne({ email });
+      if (userExist) {
+        return res.send({ message: "user exist" });
+      }
+
       const result = await userCollection.insertOne(user);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     // parcels api
     app.get("/parcels", async (req, res) => {
@@ -54,10 +61,10 @@ async function run() {
     });
     app.get("/parcels/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
-      const result = await parcelsCollection.findOne(query)
+      const query = { _id: new ObjectId(id) };
+      const result = await parcelsCollection.findOne(query);
       res.send(result);
-    })
+    });
 
     app.post("/parcels", async (req, res) => {
       const parcels = req.body;
