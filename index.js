@@ -28,6 +28,7 @@ async function run() {
     const myDB = client.db("zap_shift");
     const parcelsCollection = myDB.collection("parcels");
     const userCollection = myDB.collection("users");
+    const riderCollection = myDB.collection("riders");
 
     //users api
 
@@ -77,6 +78,17 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await parcelsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // riders related api
+
+    app.post("/riders", async (req, res) => {
+      const rider = req.body;
+      rider.status = "pending";
+      rider.createdAt = new Date();
+
+      const result = await riderCollection.insertOne(rider);
       res.send(result);
     });
 
