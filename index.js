@@ -92,6 +92,18 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/rider", async (req, res) => {
+      const query = { status: "pending" };
+      if (req.query.status) {
+        query.status = req.query.status;
+      }
+      const cursor = riderCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
