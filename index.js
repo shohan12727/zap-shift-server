@@ -1,9 +1,17 @@
 const express = require("express");
 const cors = require("cors");
+
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 3000;
+
+// firebase admin
+const admin = require("firebase-admin");
+const serviceAccount = require("./zap-shift-credential.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // middleware
 app.use(express.json());
@@ -110,7 +118,7 @@ async function run() {
     });
 
     app.get("/riders", async (req, res) => {
-      const query = { status: "pending" };
+      const query = { };
       if (req.query.status) {
         query.status = req.query.status;
       }
@@ -119,21 +127,38 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/rider/:id", verifyFBToken, async (req, res) => {
-      const status = req.body;
+    app.patch("/riders/:id", verifyFBToken, async (req, res) => {
+      const status = req.body.status;
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
-          status: status, 
+          status: status,
         },
       };
       const result = await riderCollection.updateOne(query, updatedDoc);
+
+
+
+      if (status === "approved") {
+        const email = req.body.email;
+        const userQuery = { email };
+        const updateUser = {
+          $set: {
+            role: "rider",
+          },
+        };
+        const userResult = await userCollection.updateOne(
+          userQuery,
+          updateUser
+        );
+      }
+
+
+
       res.send(result);
     });
 
-
-    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
