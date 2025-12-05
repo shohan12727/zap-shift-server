@@ -9,6 +9,23 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
+const verifyFBToken = async (req, res, next) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+
+  try {
+    const idToken = token.split(" ")[1];
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    req.decoded_email = decoded.email;
+    next();
+  } catch (err) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.alsn6h3.mongodb.net/?appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -92,7 +109,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/rider", async (req, res) => {
+    app.get("/riders", async (req, res) => {
       const query = { status: "pending" };
       if (req.query.status) {
         query.status = req.query.status;
@@ -102,7 +119,19 @@ async function run() {
       res.send(result);
     });
 
-    
+    app.patch("/rider/:id", verifyFBToken, async (req, res) => {
+      const status = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: status, 
+        },
+      };
+      const result = await riderCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
