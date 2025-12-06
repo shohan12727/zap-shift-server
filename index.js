@@ -57,6 +57,12 @@ async function run() {
 
     //users api
 
+    app.get("/users", verifyFBToken, async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       user.role = "user";
@@ -118,7 +124,7 @@ async function run() {
     });
 
     app.get("/riders", async (req, res) => {
-      const query = { };
+      const query = {};
       if (req.query.status) {
         query.status = req.query.status;
       }
@@ -138,8 +144,6 @@ async function run() {
       };
       const result = await riderCollection.updateOne(query, updatedDoc);
 
-
-
       if (status === "approved") {
         const email = req.body.email;
         const userQuery = { email };
@@ -153,8 +157,6 @@ async function run() {
           updateUser
         );
       }
-
-
 
       res.send(result);
     });
