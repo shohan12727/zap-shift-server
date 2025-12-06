@@ -76,7 +76,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("users/:email/role", async (req, res) => {
+    app.get("/users/:email/role", async (req, res) => {
       const email = req.params.email;
       const query = { email };
       const user = await userCollection.findOne(query);
@@ -118,6 +118,7 @@ async function run() {
     );
 
     // parcels api
+
     app.get("/parcels", async (req, res) => {
       const query = {};
       const { email } = req.query;
@@ -172,7 +173,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/riders/:id", verifyFBToken, async (req, res) => {
+    app.patch("/riders/:id", verifyFBToken, verifyAdmin, async (req, res) => {
       const status = req.body.status;
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
