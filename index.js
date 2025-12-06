@@ -34,6 +34,19 @@ const verifyFBToken = async (req, res, next) => {
   }
 };
 
+// middle admin before allowing admin activity
+// must be used after verifyFBToken  middleware
+const verifyAdmin = async (req, res, next) => {
+  const email = req.decoded_email;
+  const query = { email };
+  const user = await userCollection.findOne(query);
+  if (!user || user.role !== "admin") {
+    return res.status(403).send({ message: "forbidden access" });
+  }
+
+  next();
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.alsn6h3.mongodb.net/?appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -85,19 +98,24 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/users/:id", async (req, res) => {
-      const id = req.params.id;
-      console.log(id);
-      const roleInfo = req.body;
-      const query = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          role: roleInfo.role,
-        },
-      };
-      const result = await userCollection.updateOne(query, updatedDoc);
-      res.send(result);
-    });
+    app.patch(
+      "/users/:id/role",
+      verifyFBToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        // console.log(id);
+        const roleInfo = req.body;
+        const query = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: roleInfo.role,
+          },
+        };
+        const result = await userCollection.updateOne(query, updatedDoc);
+        res.send(result);
+      }
+    );
 
     // parcels api
     app.get("/parcels", async (req, res) => {
