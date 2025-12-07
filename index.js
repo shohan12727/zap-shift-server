@@ -77,10 +77,10 @@ async function run() {
       if (searchText) {
         //  query.displayName = { $regex: searchText, $options: "i" };
         query.$or = [
-          { displayName: { $regex: searchText, $options: "i" } }
+          { displayName: { $regex: searchText, $options: "i" } },
+          { email: { $regex: searchText, $options: "i" } },
         ];
       }
-
       const cursor = userCollection
         .find(query)
         .sort({ createdAt: -1 })
