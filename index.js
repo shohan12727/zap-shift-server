@@ -72,13 +72,14 @@ async function run() {
 
     app.get("/users", verifyFBToken, async (req, res) => {
       const searchText = req.query.searchText;
-   
+
       const query = {};
       if (searchText) {
-        // query.displayName = searchText;
-         query.displayName = { $regex: searchText, $options: "i" };
+        //  query.displayName = { $regex: searchText, $options: "i" };
+        query.$or = [
+          { displayName: { $regex: searchText, $options: "i" } }
+        ];
       }
-;
 
       const cursor = userCollection
         .find(query)
